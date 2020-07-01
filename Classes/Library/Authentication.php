@@ -104,8 +104,17 @@ class Authentication
                 $domain = strtolower($domain);
 
                 $configDomain = strtolower(static::$config['users']['basedn']);
-                $configDomain = substr($configDomain, strpos($configDomain, 'dc'));
 
+                if (strpos($domain, 'DC=') === false &&
+                    substr($configDomain, 0, 3) === "dc="
+                ) {
+                    $configDomain = substr($configDomain,3);
+                    $configDomain = substr($configDomain, 0, strpos($configDomain, 'dc'));
+                    $configDomain = trim($configDomain, ',');
+                } else {
+                    $configDomain = substr($configDomain, strpos($configDomain, 'dc'));
+                }
+        
                 if ($domain !== $configDomain) {
                     // Domain does not match, stop validating here
                     static::getLogger()->notice(sprintf('User domain "%s" mismatches configuration domain "%s"', $domain, $configDomain));
